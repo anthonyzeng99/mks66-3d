@@ -25,6 +25,18 @@
 void add_box( struct matrix * edges,
 	      double x, double y, double z,
 	      double width, double height, double depth ) {
+
+  add_edge(edges, x, y, z, x + 1, y + 1, z +1 );
+  add_edge(edges, x + width, y, z, x + width + 1, y + 1, z + 1);
+  add_edge(edges, x, y - height, z, x + 1, y - height + 1, z + 1);
+  add_edge(edges, x + width, y - height, z, x + width + 1, y - height + 1, z + 1);
+
+  add_edge(edges, x, y, z - depth, x + 1, y + 1, z -depth + 1);
+  add_edge(edges, x + width, y, z - depth, x + width + 1, y + 1, z - depth + 1);
+  add_edge(edges, x, y - height, z - depth, x + 1, y - height + 1, z -depth + 1);
+  add_edge(edges, x + width, y - height, z - depth, x + width + 1, y - height+ 1, z - depth + 1);
+
+  return;
 }
 
 /*======== void add_sphere() ==========
@@ -45,6 +57,16 @@ void add_box( struct matrix * edges,
 void add_sphere( struct matrix * edges, 
 		 double cx, double cy, double cz,
 		 double r, double step ) {
+
+  struct matrix *sphere = generate_sphere(cx, cy, cz, r, step);
+
+  int i;
+  for (i = 0; i < sphere -> lastcol; i += 1) {
+    add_edge(edges, sphere -> m[0][i], sphere -> m[1][i], sphere -> m[2][i],
+	     sphere -> m[0][i + 1], sphere -> m[1][i + 1], sphere -> m[2][i + 1]); 
+  }
+
+  free_matrix(sphere);
   return;
 }
 
@@ -62,7 +84,22 @@ void add_sphere( struct matrix * edges,
   ====================*/
 struct matrix * generate_sphere(double cx, double cy, double cz,
 				double r, double step ) {
-  return NULL;
+
+  struct matrix *sphere = new_matrix(4, 4);
+  double x, y, z;
+  
+  double rot, cir;
+  for (rot = step; rot <= 1.00001; rot += step) {
+    for (cir = step; cir <= 1.00001; cir += step) {
+      
+      x = r * cos( M_PI * cir ) + cx;
+      y = r * sin( M_PI * cir ) * cos( 2 * M_PI * rot ) + cy;
+      z = r * sin( M_PI * cir ) * sin( 2 * M_PI * rot ) + cz;
+
+      add_point(sphere, x, y, z);
+    }
+  }
+  return sphere;
 }
 
 /*======== void add_torus() ==========
@@ -84,6 +121,16 @@ struct matrix * generate_sphere(double cx, double cy, double cz,
 void add_torus( struct matrix * edges, 
 		double cx, double cy, double cz,
 		double r1, double r2, double step ) {
+
+  struct matrix *torus = generate_torus(cx, cy, cz, r1, r2, step);
+  
+  int i;
+  for (i = 0; i < torus -> lastcol; i += 1) {
+    add_edge(edges, torus -> m[0][i], torus -> m[1][i], torus -> m[2][i],
+	     torus -> m[0][i + 1], torus -> m[1][i + 1], torus -> m[2][i + 1]);
+  }
+
+  free_matrix(torus);
   return;
 }
 
@@ -101,7 +148,23 @@ void add_torus( struct matrix * edges,
   ====================*/
 struct matrix * generate_torus( double cx, double cy, double cz,
 				double r1, double r2, double step ) {
-  return NULL;
+
+  struct matrix *torus = new_matrix(4, 4);
+  double x, y, z;
+  
+  double rot, cir;
+  for (rot = 0; rot < 1.0001; rot += step) {
+    for (cir = 0; cir < 1.0001; cir += step) {
+      
+      x = cos( 2 * M_PI * rot ) * ( r1 * cos( 2 * M_PI * cir ) + r2 ) + cx;
+      y = r1 * sin( 2 * M_PI * cir ) + cy;
+      z = -sin( 2 * M_PI * rot ) * ( r1 * cos( 2 * M_PI * cir ) + r2 ) + cz;
+
+      add_point(torus, x, y, z);    
+    }
+  }
+  
+  return torus;
 }
 
 /*======== void add_circle() ==========
